@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>智能单词本 · 三模式全对才入库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f0f9f4 0%, #e2ede7 100%);
+            font-family: 'Segoe UI', 'Poppins', 'Roboto', system-ui, sans-serif;
+            padding: 25px 20px;
+            color: #1d3e35;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+            border: 1px solid #cae3da;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            background: linear-gradient(120deg, #1a6e5a, #369f86);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .input-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+            margin: 18px 0 12px;
+        }
+
+        .input-group {
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #2c6c5b;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 18px;
+            border-radius: 60px;
+            border: 1px solid #c8dfd6;
+            background: white;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: #1e6f5c;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-secondary {
+            background: #cbc3b0;
+            color: #2a4a3f;
+        }
+
+        .btn-start-mute {
+            background: #5f9e8a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .status {
+            font-size: 0.75rem;
+            margin-top: 12px;
+            color: #c57f4a;
+        }
+
+        .current-section {
+            background: white;
+            border-radius: 48px;
+            padding: 1.5rem;
+            margin-bottom: 32px;
+            box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.12);
+            border: 1px solid #cbe5dd;
+        }
+
+        .word-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #f6fcf9;
+            padding: 18px 20px;
+            border-radius: 40px;
+            margin-bottom: 24px;
+        }
+
+        .word-info {
+            flex: 1;
+        }
+
+        .original-word-area {
+            margin-bottom: 8px;
+        }
+        .original-word-visible {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #1b6e58;
+            letter-spacing: 1px;
+        }
+        .original-word-hidden {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #bdaa98;
+            letter-spacing: 4px;
+            background: #fef4e8;
+            display: inline-block;
+            padding: 0 10px;
+            border-radius: 30px;
+        }
+
+        .meaning-ipa {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .meaning-badge {
+            background: #fcf3e3;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .ipa-badge {
+            background: #eef2ef;
+            font-family: monospace;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .speak-lg {
+            background: #eef2ef;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 60px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #1f735f;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .mode-tab {
+            flex: 1;
+            background: #ecf6f2;
+            border: none;
+            padding: 12px 0;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #1e6856;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .mode-tab.active {
+            background: #1e6f5c;
+            color: white;
+            box-shadow: 0 4px 12px rgba(30,111,92,0.3);
+        }
+
+        .mode-tab.completed {
+            background: #c8e6d9;
+            color: #0f5a49;
+            position: relative;
+        }
+        .mode-tab.completed::after {
+            content: "✓";
+            margin-left: 6px;
+            font-weight: bold;
+        }
+
+        .quiz-panel {
+            background: #fefcf5;
+            border-radius: 36px;
+            padding: 1.5rem;
+            border: 1px solid #e2efe9;
+        }
+
+        .masked-area {
+            background: #fff9ef;
+            border-radius: 28px;
+            padding: 24px 10px;
+            text-align: center;
+            margin: 12px 0 20px;
+            font-size: 1.8rem;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+            color: #1b6b58;
+            border: 1px dashed #cbe0d6;
+        }
+
+        .quiz-input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 60px;
+            border: 1px solid #cfe1d8;
+            font-size: 1rem;
+            margin: 10px 0;
+        }
+
+        .check-btn {
+            background: #4f9d86;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 60px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .feedback {
+            margin-top: 16px;
+            font-size: 0.8rem;
+            padding: 10px 14px;
+            border-radius: 32px;
+            background: #f1f8f4;
+        }
+
+        .feedback.correct {
+            background: #daf4e8;
+            color: #1c7848;
+            border-left: 5px solid #2ecc71;
+        }
+
+        .feedback.wrong {
+            background: #ffe6e0;
+            color: #c2592c;
+            border-left: 5px solid #e67e22;
+        }
+
+        .notebook-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 20px 0 12px 0;
+            flex-wrap: wrap;
+        }
+
+        .notebook-title {
+            font-weight: 700;
+            background: #fff5e8;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+
+        .word-list {
+            background: white;
+            border-radius: 32px;
+            padding: 20px;
+            border: 1px solid #cbe5dd;
+            max-height: 280px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .word-chip {
+            background: #eef4f1;
+            padding: 8px 20px;
+            border-radius: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .word-chip:hover {
+            background: #cde3db;
+        }
+
+        .word-chip .delete {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #b37b48;
+        }
+
+        .empty-notice {
+            color: #9bb7ad;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.7rem;
+            color: #7fa092;
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="hero">
+        <h1>📖 智能单词本</h1>
+        <div class="input-area">
+            <div class="input-group">
+                <label>🔤 输入英文单词</label>
+                <input type="text" id="wordInput" placeholder="例如: guitar" autocomplete="off">
+            </div>
+            <button class="btn-primary" id="fetchBtn">✨ 获取 & 开始练习</button>
+        </div>
+        <div class="status" id="apiStatus">💡 英式音标+标准中文释义 | 三种模式全对后自动存入单词本</div>
+    </div>
+
+    <div class="current-section">
+        <div class="word-header">
+            <div class="word-info">
+                <div class="original-word-area" id="originalWordArea">
+                    <span id="originalWordDisplay" class="original-word-visible">—</span>
+                </div>
+                <div class="meaning-ipa">
+                    <span class="meaning-badge" id="currentMeaning">暂无</span>
+                    <span class="ipa-badge" id="currentIpa">/—/</span>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="speak-lg" id="speakCurrentBtn" title="英式发音">🔊</button>
+                <button class="btn-start-mute" id="startMuteBtn">📝 开始默写</button>
+            </div>
+        </div>
+
+        <div class="mode-tabs">
+            <button class="mode-tab" data-mode="cons">🔤 辅音默写<br><span style="font-size:0.7rem;">(元音挖空)</span></button>
+            <button class="mode-tab" data-mode="vowel">🔊 元音默写<br><span style="font-size:0.7rem;">(辅音挖空)</span></button>
+            <button class="mode-tab" data-mode="hidden">❓ 完全默写<br><span style="font-size:0.7rem;">(无提示)</span></button>
+        </div>
+
+        <div class="quiz-panel">
+            <div class="masked-area" id="maskDisplay">_ _ _ _</div>
+            <input type="text" class="quiz-input" id="quizInput" placeholder="填写完整单词" autocomplete="off">
+            <button class="check-btn" id="checkBtn">✓ 核对答案</button>
+            <div class="feedback" id="feedbackMsg">📝 根据提示补全单词</div>
+        </div>
+    </div>
+
+    <div class="notebook-header">
+        <span class="notebook-title">📔 已完成三模式的单词本 (最多30个)</span>
+        <button id="clearNotebookBtn" class="btn-primary btn-secondary" style="padding:6px 18px;">清空所有</button>
+    </div>
+    <div id="wordListContainer" class="word-list">
+        <div class="empty-notice">暂无单词，完成三种默写模式后自动加入</div>
+    </div>
+    <div class="footer">✅ 每个单词需在三种模式下分别答对一次，才会存入单词本。点击单词本中的单词可重新练习（会从单词本移除，需再次完成三模式）。</div>
+</div>
+
+<script>
+    // ---------- 全局 ----------
+    let wordHistory = [];
+    let currentWordObj = null;
+    let currentProgress = { cons: false, vowel: false, hidden: false };
+    let currentMode = "cons";
+
+    // ---------- 辅助函数 ----------
+    function isVowelLetter(ch) {
+        return 'aeiou'.includes(ch.toLowerCase());
+    }
+
+    function getMaskedString(word, mode) {
+        if (!word) return "????";
+        if (mode === 'cons') {
+            let res = '';
+            for (let ch of word) {
+                if (isVowelLetter(ch)) res += '_';
+                else res += ch;
+            }
+            return res;
+        } else if (mode === 'vowel') {
+            let res = '';
+            for (let ch of word) {
+                if (isVowelLetter(ch)) res += ch;
+                else res += '_';
+            }
+            return res;
+        } else {
+            return '_'.repeat(word.length);
+        }
+    }
+
+    function updateMaskDisplay() {
+        const maskDiv = document.getElementById('maskDisplay');
+        if (!currentWordObj) {
+            maskDiv.innerText = '????';
+            return;
+        }
+        maskDiv.innerText = getMaskedString(currentWordObj.word, currentMode);
+    }
+
+    function setOriginalWordVisible(visible) {
+        const container = document.getElementById('originalWordDisplay');
+        if (!container) return;
+        if (!currentWordObj) {
+            container.innerText = '—';
+            container.className = 'original-word-visible';
+            return;
+        }
+        if (visible) {
+            container.innerText = currentWordObj.word;
+            container.className = 'original-word-visible';
+        } else {
+            const hiddenText = '●'.repeat(Math.min(currentWordObj.word.length, 8));
+            container.innerText = hiddenText || '???';
+            container.className = 'original-word-hidden';
+        }
+    }
+
+    function updateCurrentHeader() {
+        const meaningSpan = document.getElementById('currentMeaning');
+        const ipaSpan = document.getElementById('currentIpa');
+        if (!currentWordObj) {
+            meaningSpan.innerText = '暂无';
+            ipaSpan.innerText = '/—/';
+            return;
+        }
+        meaningSpan.innerText = currentWordObj.meaning;
+        ipaSpan.innerText = currentWordObj.ipa || '/—/';
+    }
+
+    function resetQuizInputAndFeedback() {
+        const inputEl = document.getElementById('quizInput');
+        if (inputEl) inputEl.value = '';
+        const feedbackDiv = document.getElementById('feedbackMsg');
+        if (feedbackDiv) {
+            feedbackDiv.innerHTML = '📝 根据提示补全单词';
+            feedbackDiv.classList.remove('correct', 'wrong');
+        }
+    }
+
+    function updateModeButtonsProgress() {
+        document.querySelectorAll('.mode-tab').forEach(btn => {
+            const mode = btn.getAttribute('data-mode');
+            if (currentProgress[mode]) {
+                btn.classList.add('completed');
+            } else {
+                btn.classList.remove('completed');
+            }
+        });
+    }
+
+    function checkAndAddToHistory() {
+        if (!currentWordObj) return false;
+        if (currentProgress.cons && currentProgress.vowel && currentProgress.hidden) {
+            const alreadyExists = wordHistory.some(item => item.word === currentWordObj.word);
+            if (!alreadyExists) {
+                wordHistory.unshift({ ...currentWordObj });
+                if (wordHistory.length > 30) wordHistory.pop();
+                renderWordList();
+                const feedbackDiv = document.getElementById('feedbackMsg');
+                const originalMsg = feedbackDiv.innerHTML;
+                feedbackDiv.innerHTML = `🎉 恭喜！“${currentWordObj.word}” 三种模式全部正确，已加入单词本！`;
+                feedbackDiv.classList.add('correct');
+                setTimeout(() => {
+                    if (feedbackDiv.innerHTML.includes("已加入单词本")) {
+                        feedbackDiv.innerHTML = originalMsg;
+                        feedbackDiv.classList.remove('correct');
+                    }
+                }, 2000);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    function checkAnswer() {
+        if (!currentWordObj) {
+            alert("请先添加一个单词");
+            return;
+        }
+        const userAnswer = document.getElementById('quizInput').value.trim().toLowerCase();
+        const correctWord = currentWordObj.word.toLowerCase();
+        const feedbackDiv = document.getElementById('feedbackMsg');
+        if (userAnswer === correctWord) {
+            if (!currentProgress[currentMode]) {
+                currentProgress[currentMode] = true;
+                updateModeButtonsProgress();
+                feedbackDiv.innerHTML = `✅ 正确！ “${currentWordObj.word}” ${getModeChineseName(currentMode)} 模式已完成！`;
+                feedbackDiv.classList.add('correct');
+                feedbackDiv.classList.remove('wrong');
+                checkAndAddToHistory();
+            } else {
+                feedbackDiv.innerHTML = `✅ 正确！ 但该模式之前已答对过，继续加油完成其他模式吧。`;
+                feedbackDiv.classList.add('correct');
+                feedbackDiv.classList.remove('wrong');
+            }
+        } else {
+            feedbackDiv.innerHTML = `❌ 错误！ 再试试看～`;
+            feedbackDiv.classList.add('wrong');
+            feedbackDiv.classList.remove('correct');
+        }
+    }
+
+    function getModeChineseName(mode) {
+        if (mode === 'cons') return '辅音默写';
+        if (mode === 'vowel') return '元音默写';
+        return '完全默写';
+    }
+
+    function setCurrentWord(wordObj, resetProgress = true) {
+        currentWordObj = wordObj;
+        if (resetProgress) {
+            currentProgress = { cons: false, vowel: false, hidden: false };
+            updateModeButtonsProgress();
+        }
+        if (currentWordObj) {
+            updateCurrentHeader();
+            updateMaskDisplay();
+            setOriginalWordVisible(true);
+        } else {
+            updateCurrentHeader();
+            document.getElementById('maskDisplay').innerText = '????';
+            setOriginalWordVisible(true);
+        }
+        resetQuizInputAndFeedback();
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-tab').forEach(btn => {
+            const btnMode = btn.getAttribute('data-mode');
+            if (btnMode === mode) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        setOriginalWordVisible(false);
+        updateMaskDisplay();
+        resetQuizInputAndFeedback();
+    }
+
+    function startMute() {
+        if (!currentWordObj) {
+            alert("请先添加一个单词");
+            return;
+        }
+        setOriginalWordVisible(false);
+        const feedbackDiv = document.getElementById('feedbackMsg');
+        if (feedbackDiv && !feedbackDiv.innerHTML.includes('正确') && !feedbackDiv.innerHTML.includes('错误')) {
+            const originalMsg = feedbackDiv.innerHTML;
+            feedbackDiv.innerHTML = '🔒 原单词已隐藏，开始默写吧！';
+            setTimeout(() => {
+                if (feedbackDiv.innerHTML === '🔒 原单词已隐藏，开始默写吧！') {
+                    feedbackDiv.innerHTML = originalMsg;
+                }
+            }, 1200);
+        }
+    }
+
+    // ---------- 发音 ----------
+    let britishVoice = null;
+    function initVoices() {
+        if (typeof speechSynthesis === 'undefined') return;
+        const setVoice = () => {
+            const voices = speechSynthesis.getVoices();
+            if (voices.length) {
+                britishVoice = voices.find(v => v.lang === 'en-GB' || v.lang.startsWith('en-GB')) ||
+                               voices.find(v => v.lang.includes('GB')) ||
+                               voices.find(v => v.lang.includes('en'));
+            }
+        };
+        setVoice();
+        if (speechSynthesis.onvoiceschanged) speechSynthesis.onvoiceschanged = setVoice;
+    }
+    initVoices();
+
+    function speakWord(word) {
+        if (typeof speechSynthesis === 'undefined') return;
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-GB';
+        utterance.rate = 0.9;
+        if (britishVoice) utterance.voice = britishVoice;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utterance);
+    }
+
+    // ---------- 增强的英式音标与标准中文释义 ----------
+    // 核心词典：收录常见单词，确保音标和中文权威准确
+    const masterDictionary = {
+        "guitar": { meaning: "吉他", ipa: "/ɡɪˈtɑː(r)/" },
+        "honest": { meaning: "诚实的", ipa: "/ˈɒnɪst/" },
+        "patient": { meaning: "耐心的", ipa: "/ˈpeɪʃnt/" },
+        "improve": { meaning: "改进，改善", ipa: "/ɪmˈpruːv/" },
+        "confident": { meaning: "自信的", ipa: "/ˈkɒnfɪdənt/" },
+        "courage": { meaning: "勇气", ipa: "/ˈkʌrɪdʒ/" },
+        "friendship": { meaning: "友谊", ipa: "/ˈfrendʃɪp/" },
+        "admiration": { meaning: "钦佩，赞赏", ipa: "/ˌædməˈreɪʃn/" },
+        "respect": { meaning: "尊重", ipa: "/rɪˈspekt/" },
+        "support": { meaning: "支持", ipa: "/səˈpɔːt/" },
+        "trust": { meaning: "信任", ipa: "/trʌst/" },
+        "survey": { meaning: "调查", ipa: "/ˈsɜːveɪ/" },
+        "personal": { meaning: "个人的", ipa: "/ˈpɜːsənl/" },
+        "quality": { meaning: "品质", ipa: "/ˈkwɒləti/" },
+        "caring": { meaning: "体贴的，关心他人的", ipa: "/ˈkeərɪŋ/" },
+        "describe": { meaning: "描述", ipa: "/dɪˈskraɪb/" },
+        "appearance": { meaning: "外貌", ipa: "/əˈpɪərəns/" },
+        "straight": { meaning: "直的", ipa: "/streɪt/" },
+        "dark": { meaning: "深色的，乌黑的", ipa: "/dɑːk/" },
+        "same": { meaning: "相同的", ipa: "/seɪm/" },
+        "basic": { meaning: "基本的", ipa: "/ˈbeɪsɪk/" },
+        "thought": { meaning: "想法", ipa: "/θɔːt/" },
+        "however": { meaning: "然而", ipa: "/haʊˈevə(r)/" },
+        "glad": { meaning: "高兴的", ipa: "/ɡlæd/" },
+        "rise": { meaning: "上升", ipa: "/raɪz/" },
+        "end": { meaning: "结局，结尾", ipa: "/end/" },
+        "heart": { meaning: "心脏，心", ipa: "/hɑːt/" },
+        // 扩展常用词
+        "apple": { meaning: "苹果", ipa: "/ˈæp(ə)l/" },
+        "book": { meaning: "书", ipa: "/bʊk/" },
+        "car": { meaning: "汽车", ipa: "/kɑː(r)/" },
+        "dog": { meaning: "狗", ipa: "/dɒɡ/" },
+        "cat": { meaning: "猫", ipa: "/kæt/" },
+        "house": { meaning: "房子", ipa: "/haʊs/" },
+        "happy": { meaning: "快乐的", ipa: "/ˈhæpi/" },
+        "sad": { meaning: "悲伤的", ipa: "/sæd/" },
+        "big": { meaning: "大的", ipa: "/bɪɡ/" },
+        "small": { meaning: "小的", ipa: "/smɔːl/" },
+        "run": { meaning: "跑", ipa: "/rʌn/" },
+        "walk": { meaning: "步行", ipa: "/wɔːk/" }
+    };
+
+    // 从 API 获取最佳英式音标和中文释义，优先使用词典
+    async function fetchBestWordData(word) {
+        const lowerWord = word.toLowerCase().trim();
+        if (!lowerWord) throw new Error("单词不能为空");
+
+        // 优先使用内置权威词典
+        if (masterDictionary[lowerWord]) {
+            return {
+                word: lowerWord,
+                meaning: masterDictionary[lowerWord].meaning,
+                ipa: masterDictionary[lowerWord].ipa
+            };
+        }
+
+        let phonetic = `/${lowerWord}/`;
+        let englishDef = lowerWord;
+        let chineseMeaning = "";
+
+        try {
+            const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(lowerWord)}`);
+            if (dictRes.ok) {
+                const dictData = await dictRes.json();
+                if (dictData && dictData.length > 0) {
+                    const entry = dictData[0];
+                    // 选择英式音标：优先 phonetic 字段，其次在 phonetics 中找包含 "text" 且不带美式标志的
+                    if (entry.phonetic) {
+                        phonetic = entry.phonetic;
+                    }
+                    // 如果存在多个音标，尝试找更英式的（例如以 / 开头且不含 r 色彩明显美式的）
+                    if (entry.phonetics && entry.phonetics.length) {
+                        const ukPhonetic = entry.phonetics.find(p => p.text && (p.text.includes("ˈ") || p.text.includes("ˌ")) && !p.text.includes("ɚ"));
+                        if (ukPhonetic && ukPhonetic.text) phonetic = ukPhonetic.text;
+                        else if (entry.phonetics[0] && entry.phonetics[0].text) phonetic = entry.phonetics[0].text;
+                    }
+                    // 获取英文定义
+                    if (entry.meanings && entry.meanings.length) {
+                        const def = entry.meanings[0].definitions[0];
+                        if (def && def.definition) englishDef = def.definition;
+                    }
+                }
+            }
+        } catch (e) { console.warn("Dictionary API error", e); }
+
+        // 翻译并优化中文
+        try {
+            const transUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(englishDef)}&langpair=en|zh`;
+            const transRes = await fetch(transUrl);
+            if (transRes.ok) {
+                const transData = await transRes.json();
+                if (transData && transData.responseData && transData.responseData.translatedText) {
+                    let translated = transData.responseData.translatedText;
+                    if (translated && translated !== englishDef) {
+                        // 清理翻译结果：取第一句，去掉多余注释
+                        let cleaned = translated.split(/[,，;；]/)[0].split(/\./)[0].trim();
+                        if (cleaned.length > 0) chineseMeaning = cleaned;
+                        else chineseMeaning = translated;
+                        // 如果翻译结果包含 "[译]" 或明显是英文，则保留原定义并标记
+                        if (chineseMeaning.length > 50) chineseMeaning = chineseMeaning.slice(0, 50) + '…';
+                    }
+                }
+            }
+        } catch (err) { console.warn("Translation error", err); }
+
+        // 后备处理
+        if (!chineseMeaning || chineseMeaning === englishDef || chineseMeaning === lowerWord) {
+            chineseMeaning = `[待完善] ${englishDef.slice(0, 40)}`;
+        }
+
+        // 简单标准化音标显示
+        if (!phonetic.startsWith('/')) phonetic = `/${phonetic}/`;
+
+        return {
+            word: lowerWord,
+            meaning: chineseMeaning,
+            ipa: phonetic
+        };
+    }
+
+    async function fetchAndSetWord() {
+        const inputEl = document.getElementById('wordInput');
+        const rawWord = inputEl.value.trim();
+        if (!rawWord) {
+            alert("请输入英文单词");
+            return;
+        }
+        const addBtn = document.getElementById('fetchBtn');
+        const originalText = addBtn.innerText;
+        addBtn.innerText = "⏳ 查询中...";
+        addBtn.disabled = true;
+        const statusDiv = document.getElementById('apiStatus');
+        statusDiv.innerHTML = "🔍 正在获取英式音标及标准释义...";
+
+        try {
+            const wordData = await fetchBestWordData(rawWord);
+            const newWordObj = {
+                word: wordData.word,
+                meaning: wordData.meaning,
+                ipa: wordData.ipa
+            };
+            // 如果已存在于单词本，先移除（重新练习）
+            const existingIndex = wordHistory.findIndex(item => item.word === newWordObj.word);
+            if (existingIndex !== -1) {
+                wordHistory.splice(existingIndex, 1);
+                renderWordList();
+            }
+            setCurrentWord(newWordObj, true);
+            inputEl.value = '';
+            statusDiv.innerHTML = `✅ 加载成功: ${newWordObj.word} — ${newWordObj.meaning}  ${newWordObj.ipa}`;
+            setTimeout(() => {
+                if (statusDiv.innerHTML.includes("加载成功")) statusDiv.innerHTML = "💡 完成三种模式后自动存入单词本";
+            }, 2500);
+        } catch (err) {
+            console.error(err);
+            statusDiv.innerHTML = `❌ 获取失败: ${err.message || "请检查网络或单词拼写"}`;
+        } finally {
+            addBtn.innerText = originalText;
+            addBtn.disabled = false;
+        }
+    }
+
+    // ---------- 单词本渲染 ----------
+    function renderWordList() {
+        const container = document.getElementById('wordListContainer');
+        if (!container) return;
+        if (wordHistory.length === 0) {
+            container.innerHTML = '<div class="empty-notice">📭 暂无单词，完成三种默写模式后自动加入</div>';
+            return;
+        }
+        let html = '';
+        wordHistory.forEach((item) => {
+            html += `
+                <div class="word-chip" data-word="${escapeHtml(item.word)}">
+                    <span>${escapeHtml(item.word)}</span>
+                    <button class="delete" data-word="${escapeHtml(item.word)}">✖</button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+
+        document.querySelectorAll('.word-chip').forEach(chip => {
+            const wordSpan = chip.querySelector('span');
+            if (wordSpan) {
+                const wordText = wordSpan.innerText;
+                chip.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete')) return;
+                    const found = wordHistory.find(w => w.word === wordText);
+                    if (found) {
+                        const idx = wordHistory.findIndex(w => w.word === wordText);
+                        if (idx !== -1) wordHistory.splice(idx, 1);
+                        renderWordList();
+                        setCurrentWord(found, true);
+                        setOriginalWordVisible(true);
+                    }
+                });
+            }
+            const deleteBtn = chip.querySelector('.delete');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const wordToDelete = deleteBtn.getAttribute('data-word');
+                    const idx = wordHistory.findIndex(w => w.word === wordToDelete);
+                    if (idx !== -1) wordHistory.splice(idx, 1);
+                    renderWordList();
+                    if (currentWordObj && currentWordObj.word === wordToDelete) {
+                        setCurrentWord(null);
+                    }
+                });
+            }
+        });
+    }
+
+    function clearNotebook() {
+        if (wordHistory.length && confirm("清空单词本？")) {
+            wordHistory = [];
+            renderWordList();
+        }
+    }
+
+    function bindEvents() {
+        document.getElementById('fetchBtn').addEventListener('click', fetchAndSetWord);
+        document.getElementById('speakCurrentBtn').addEventListener('click', () => {
+            if (currentWordObj) speakWord(currentWordObj.word);
+            else alert("请先添加单词");
+        });
+        document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+        document.getElementById('clearNotebookBtn').addEventListener('click', clearNotebook);
+        document.getElementById('startMuteBtn').addEventListener('click', startMute);
+        document.getElementById('wordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchAndSetWord();
+        });
+        document.querySelectorAll('.mode-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const mode = btn.getAttribute('data-mode');
+                if (mode === 'cons') setMode('cons');
+                else if (mode === 'vowel') setMode('vowel');
+                else if (mode === 'hidden') setMode('hidden');
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    function init() {
+        wordHistory = [];
+        currentWordObj = null;
+        setCurrentWord(null);
+        setMode('cons');
+        bindEvents();
+        renderWordList();
+    }
+
+    init();
+</script>
+</body>
+</html>
